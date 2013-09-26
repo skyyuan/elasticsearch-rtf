@@ -365,8 +365,8 @@
 
 
 index:
-  analysis: 
-    tokenizer:      
+  analysis:
+    tokenizer:
       my_pinyin:
           type: pinyin
           first_letter: "prefix"
@@ -384,11 +384,11 @@ index:
           type: mmseg
           seg_type: "simple"
       semicolon_spliter:
-          type: pattern 
+          type: pattern
           pattern: ";"
       pct_spliter:
           type: "pattern"
-          pattern: "[%]+"  
+          pattern: "[%]+"
       s2t_convert:
           type: "stconvert"
           delimiter: ","
@@ -407,16 +407,16 @@ index:
           delimiter: ","
           keep_both: "true"
           convert_type: "t2s"
-		  
+
     filter:
       ngram_min_2:
           max_gram: 10
           min_gram: 2
-          type: nGram     
+          type: nGram
       ngram_min_1:
           max_gram: 10
           min_gram: 1
-          type: nGram      
+          type: nGram
       min2_length:
           min:  2
           max:  4
@@ -445,7 +445,7 @@ index:
           redis_port: 6379
           redis_key: "index1_type2_name2"
 
-    analyzer:      
+    analyzer:
       lowercase_keyword:
           type: custom
           filter: [standard,lowercase]
@@ -453,15 +453,15 @@ index:
       lowercase_keyword_ngram_min_size1:
           type: custom
           filter: [ngram_min_1,standard,lowercase]
-          tokenizer: nGram 
+          tokenizer: nGram
       lowercase_keyword_ngram_min_size2:
           type: custom
           filter: [ngram_min_2,standard,lowercase,min2_length,stop]
-          tokenizer: nGram 
+          tokenizer: nGram
       lowercase_keyword_ngram:
           type: custom
           filter: [ngram_min_1,standard,lowercase]
-          tokenizer: nGram       
+          tokenizer: nGram
       lowercase_keyword_without_standard:
           type: custom
           filter: [lowercase]
@@ -481,20 +481,20 @@ index:
           use_smart: true
       mmseg:
           alias: [mmseg_analyzer]
-          type: org.elasticsearch.index.analysis.MMsegAnalyzerProvider 
+          type: org.elasticsearch.index.analysis.MMsegAnalyzerProvider
       comma_spliter:
           type: "pattern"
-          pattern: "[,|\\s]+"      
+          pattern: "[,|\\s]+"
       pct_spliter:
           type: "pattern"
-          pattern: "[%]+"   
+          pattern: "[%]+"
       custom_snowball_analyzer:
           type: "snowball"
           language: "English"
       simple_english_analyzer:
           type: "custome"
           tokenizer: whitespace
-          filter: [standard,lowercase,snowball] 
+          filter: [standard,lowercase,snowball]
       edge_ngram:
           type: custom
           tokenizer: edgeNGram
@@ -502,17 +502,17 @@ index:
       pinyin_ngram_analyzer:
           type: custom
           tokenizer: my_pinyin
-          filter: [standard,lowercase,nGram]     
+          filter: [standard,lowercase,nGram]
       pinyin_first_letter_analyzer:
           type: custom
           tokenizer: pinyin_first_letter
-          filter: [standard,lowercase] 
+          filter: [standard,lowercase]
 #      paoding:
 #          alias: [paoding_analyzer]
-#          type: org.elasticsearch.index.analysis.PaodingAnalyzerProvider 
+#          type: org.elasticsearch.index.analysis.PaodingAnalyzerProvider
       stconvert:
           alias: [st_analyzer]
-          type: org.elasticsearch.index.analysis.STConvertAnalyzerProvider           
+          type: org.elasticsearch.index.analysis.STConvertAnalyzerProvider
       s2t_convert:
           type: "stconvert"
           delimiter: ","
@@ -532,16 +532,16 @@ index:
           keep_both: "true"
           convert_type: "t2s"
       string2int:
-          type: org.elasticsearch.index.analysis.String2IntAnalyzerProvider 
+          type: org.elasticsearch.index.analysis.String2IntAnalyzerProvider
           redis_server: "127.0.0.1"
           redis_port: 6379
           redis_key: "index1_type1_name1"
       custom_string2int:
           type: custom
           tokenizer: whitespace
-          filter: [my_string2int,lowercase]  
+          filter: [my_string2int,lowercase]
 #      ansj:
 #          alias: [ansj_analyzer]
-#          type: org.elasticsearch.index.analysis.AnsjAnalyzerProvider		  
-		  
+#          type: org.elasticsearch.index.analysis.AnsjAnalyzerProvider
+
 index.analysis.analyzer.default.type : "mmseg"

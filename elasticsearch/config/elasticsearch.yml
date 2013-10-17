@@ -179,7 +179,7 @@
 #
 # Set this property to true to lock the memory:
 #
-# bootstrap.mlockall: true
+bootstrap.mlockall: true
 
 # Make sure that the ES_MIN_MEM and ES_MAX_MEM environment variables are set
 # to the same value, and that the machine has enough memory to allocate
@@ -507,9 +507,6 @@ index:
           type: custom
           tokenizer: pinyin_first_letter
           filter: [standard,lowercase]
-#      paoding:
-#          alias: [paoding_analyzer]
-#          type: org.elasticsearch.index.analysis.PaodingAnalyzerProvider
       stconvert:
           alias: [st_analyzer]
           type: org.elasticsearch.index.analysis.STConvertAnalyzerProvider
@@ -540,8 +537,36 @@ index:
           type: custom
           tokenizer: whitespace
           filter: [my_string2int,lowercase]
-#      ansj:
-#          alias: [ansj_analyzer]
-#          type: org.elasticsearch.index.analysis.AnsjAnalyzerProvider
+      index_ansj:
+        alias: [ansj_index_analyzer]
+        type: ansj_index
+        user_path: ansj/user
+        ambiguity: ansj/ambiguity.dic
+        stop_path: ansj/stopLibrary.dic
+        # redis:
+        #   pool:
+        #     maxactive: 20
+        #     maxidle: 10
+        #     maxwait: 100
+        #     testonborrow: true
+        #   ip: publish.redis.master.yao.com:6379
+        #   channel: ansj_term
+      query_ansj:
+        alias: [ansj_query_analyzer]
+        type: ansj_query
+        user_path: ansj/user
+        ambiguity: ansj/ambiguity.dic
+        stop_path: ansj/stopLibrary.dic
+        # redis:
+        #   pool:
+        #     maxactive: 20
+        #     maxidle: 10
+        #     maxwait: 100
+        #     testonborrow: true
+        #   ip: publish.redis.master.yao.com:6379
+        #   channel: ansj_term
 
-index.analysis.analyzer.default.type : "mmseg"
+# index.analysis.analyzer.default.type : "mmseg"
+index.analysis.analyzer.default.type : "ansj_index"
+
+

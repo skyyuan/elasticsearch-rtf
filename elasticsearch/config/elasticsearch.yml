@@ -540,9 +540,9 @@ index:
       index_ansj:
         alias: [ansj_index_analyzer]
         type: ansj_index
-        user_path: ansj/user
-        ambiguity: ansj/ambiguity.dic
-        stop_path: ansj/stopLibrary.dic
+        # user_path: ansj/user
+        # ambiguity: ansj/ambiguity.dic
+        # stop_path: ansj/stopLibrary.dic
         # redis:
         #   pool:
         #     maxactive: 20
@@ -554,9 +554,9 @@ index:
       query_ansj:
         alias: [ansj_query_analyzer]
         type: ansj_query
-        user_path: ansj/user
-        ambiguity: ansj/ambiguity.dic
-        stop_path: ansj/stopLibrary.dic
+        # user_path: ansj/user
+        # ambiguity: ansj/ambiguity.dic
+        # stop_path: ansj/stopLibrary.dic
         # redis:
         #   pool:
         #     maxactive: 20

@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
    limitations under the License.
 */
 
-// full _cluster/state response, http://www.elasticsearch.org/guide/reference/api/admin-cluster-state.html
+/**
+ * REST end point: _cluster/state/nodes,routing_table?human=true
+ * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-state.html">cluster state</a>
+ */
 
 var ClusterStateTimestamp = Backbone.Model;
 
@@ -23,7 +26,7 @@ var ClusterState = Backbone.Collection.extend({
     model: ClusterStateTimestamp,
 
     url: function() {
-        return '/_cluster/state';
+        return '/_cluster/state/nodes,routing_table?human=true';
     },
 
     parse: function(data) {

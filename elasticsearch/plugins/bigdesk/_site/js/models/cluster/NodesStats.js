@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
    limitations under the License.
 */
 
-// _nodes/stats
+/**
+ * REST end point: _nodes/stats?human=true
+ * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-nodes-stats.html">nodes statistics<a/>
+ */
 
 var NodeStats = Backbone.Model;
 
@@ -38,7 +41,7 @@ var NodeStatsTimestamp = Backbone.Model.extend({
 var NodesStats = Backbone.Collection.extend({
     model: NodeStatsTimestamp,
     url: function() {
-        return '/_nodes/stats?all=true';
+        return '/_nodes/stats?human=true';
     },
     parse: function(response) {
         delete response.cluster_name;

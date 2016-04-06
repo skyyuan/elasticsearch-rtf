@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -107,8 +107,8 @@ var ClusterStateView = Backbone.View.extend({
 
 //                console.log("pack", packData);
 
-                var width = 400,
-                    height = 400,
+                var width = 600,
+                    height = 600,
                     format = d3.format(",d"),
                     span = 5;
 

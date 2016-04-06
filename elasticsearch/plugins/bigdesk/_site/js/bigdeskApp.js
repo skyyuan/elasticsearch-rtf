@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -289,9 +289,10 @@ $(document).ready(
                     button.click();
                 } else {
                     button.click();
-                    return false;
                 }
+				return false;
             }
+			return true;
         });
 
         var getSearchUrlVar = function(key) {
@@ -319,6 +320,10 @@ $(document).ready(
                 // if "endpoint" or "connect" values provided as an URL parameter, do not change them
                 if (!getSearchUrlVar("endpoint")) {
                     params.endpoint = window.location.protocol + "//" + window.location.host;
+                    var index = window.location.pathname.indexOf("/_plugin");
+                    if (index > 0){
+                    	params.endpoint += window.location.pathname.substr(0, index);
+                    }
                 }
                 if (!getSearchUrlVar("connect")) {
                     params.connect = true;
@@ -408,7 +413,7 @@ $(document).ready(
 
         });
 
-        var bigdeskRouter = new BigdeskRouter();
+        new BigdeskRouter();
 
         Backbone.history.start();
 

@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ function timeAreaChart() {
             .range([height - margin.bottom, 0 + margin.top]);
 
         xAxis = d3.svg.axis().scale(time_scale_axis).orient("bottom").ticks(4).tickSize(6,3,0).tickSubdivide(true);
-        yAxis = d3.svg.axis().scale(value_scale).orient("right").ticks(4);
+        yAxis = d3.svg.axis().scale(value_scale).orient("right").ticks(4).tickFormat(d3.format("s"));
 
         line = d3.svg.line()
 //        .interpolate("monotone")

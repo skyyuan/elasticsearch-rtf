@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
    limitations under the License.
 */
 
-// just nodes from _cluster/state
+/**
+ * REST end point: _cluster/state/nodes,master_node
+ * @see <a href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/cluster-state.html">cluster state</a>
+ */
 
 var NodeState = Backbone.Model.extend({
     defaults: {
@@ -27,9 +30,7 @@ var NodesState = Backbone.Collection.extend({
     model: NodeState,
 
     url: function() {
-        var flags = ["filter_routing_table", "filter_metadata", "filter_blocks"];
-        var query = flags.join("=true&")+"=true";
-        return '/_cluster/state?'+query;
+        return '/_cluster/state/nodes,master_node';
     },
 
     // Move important keys into values.

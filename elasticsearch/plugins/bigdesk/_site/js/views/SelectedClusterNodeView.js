@@ -1,5 +1,5 @@
 /*
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -194,19 +194,30 @@ var SelectedClusterNodeView = Backbone.View.extend({
                     // JVM GC
 
                     _.defer(function(){
-                        var jvm_gc_collection_count_delta = bigdesk_charts.jvmGC.series1(stats);
-                        var jvm_gc_collection_time_delta = bigdesk_charts.jvmGC.series2(stats);
-                        if (jvm_gc_collection_count_delta.length > 1 && jvm_gc_collection_time_delta.length > 1) {
+                        var jvm_gc_young_collection_count_delta = bigdesk_charts.jvmGC.series1(stats);
+                        var jvm_gc_old_collection_count_delta = bigdesk_charts.jvmGC.series2(stats);
+                        var jvm_gc_both_collection_time_delta = bigdesk_charts.jvmGC.series3(stats);
+                        if (jvm_gc_old_collection_count_delta.length > 1 && jvm_gc_young_collection_count_delta.length > 1 && jvm_gc_both_collection_time_delta.length > 1) {
 
-                            delta(jvm_gc_collection_count_delta);
-                            delta(jvm_gc_collection_time_delta);
+                            delta(jvm_gc_old_collection_count_delta);
+                            delta(jvm_gc_young_collection_count_delta);
+                            delta(jvm_gc_both_collection_time_delta);
 
-                            try { chart_jvmGC.animate(animatedCharts).update(jvm_gc_collection_count_delta, jvm_gc_collection_time_delta); } catch (ignore) {}
+                            try {
+								chart_jvmGC.animate(animatedCharts).update(
+									jvm_gc_young_collection_count_delta,
+									jvm_gc_old_collection_count_delta,
+									jvm_gc_both_collection_time_delta);
+							} catch (ignore) {}
                         }
 
                         if (stats_the_latest && stats_the_latest.node) {
-                            $("#jvm_gc_time").text(stats_the_latest.node.jvm.gc.collection_time_in_millis + "ms");
-                            $("#jvm_gc_count").text(stats_the_latest.node.jvm.gc.collection_count);
+                            $("#jvm_gc_time").text(
+								stats_the_latest.node.jvm.gc.collectors.old.collection_time_in_millis + "ms / " + stats_the_latest.node.jvm.gc.collectors.young.collection_time_in_millis + "ms"
+							);
+                            $("#jvm_gc_count").text(
+								stats_the_latest.node.jvm.gc.collectors.old.collection_count + " / " + stats_the_latest.node.jvm.gc.collectors.young.collection_count
+							);
                         } else {
                             $("#jvm_gc_time").text("n/a");
                             $("#jvm_gc_count").text("n/a");
@@ -532,7 +543,7 @@ var SelectedClusterNodeView = Backbone.View.extend({
 
                             try { chart_indicesGetTime.animate(animatedCharts).update(indices_get_time, indices_missing_time, indices_exists_time); } catch (ignore) {}
 
-                            $("#indices_get_time").text(stats_the_latest.node.indices.get.time);
+                            $("#indices_get_time").text(stats_the_latest.node.indices.get.get_time);
                             $("#indices_exists_time").text(stats_the_latest.node.indices.get.exists_time);
                             $("#indices_missing_time").text(stats_the_latest.node.indices.get.missing_time);
                         }
@@ -582,15 +593,20 @@ var SelectedClusterNodeView = Backbone.View.extend({
                     _.defer(function(){
                         var indices_cache_field_size = bigdesk_charts.indicesCacheSize.series1(stats);
                         var indices_cache_filter_size = bigdesk_charts.indicesCacheSize.series2(stats);
+                        var indices_id_cache_size = bigdesk_charts.indicesCacheSize.series3(stats);
 
-                        try { chart_indicesCacheSize.animate(animatedCharts).update(indices_cache_field_size, indices_cache_filter_size); } catch (ignore) {}
+                        try { chart_indicesCacheSize.animate(animatedCharts)
+							.update(indices_cache_field_size, indices_cache_filter_size, indices_id_cache_size);
+						} catch (ignore) {}
 
                         if (stats_the_latest.node && stats_the_latest.node.indices && stats_the_latest.node.indices.filter_cache) {
                             $("#indices_filter_cache_size").text(stats_the_latest.node.indices.filter_cache.memory_size);
                             $("#indices_field_cache_size").text(stats_the_latest.node.indices.fielddata.memory_size);
+                            $("#indices_id_cache_size").text(stats_the_latest.node.indices.id_cache.memory_size);
                         } else {
                             $("#indices_filter_cache_size").text("n/a");
                             $("#indices_field_cache_size").text("n/a");
+                            $("#indices_id_cache_size").text("n/a");
                         }
                     });
 
@@ -617,13 +633,13 @@ var SelectedClusterNodeView = Backbone.View.extend({
                     // --------------------------------------------
                     // Indices: cache filter count
 
-                    _.defer(function(){
-                        if (stats_the_latest.node && stats_the_latest.node.indices && stats_the_latest.node.indices.cache) {
-                            $("#indices_cache_filter_size").text(stats_the_latest.node.indices.cache.filter_count);
-                        } else {
-                            $("#indices_cache_filter_size").text("n/a");
-                        }
-                    });
+//                    _.defer(function(){
+//                        if (stats_the_latest.node && stats_the_latest.node.indices && stats_the_latest.node.indices.cache) {
+//                            $("#indices_cache_filter_size").text(stats_the_latest.node.indices.cache.filter_count);
+//                        } else {
+//                            $("#indices_cache_filter_size").text("n/a");
+//                        }
+//                    });
 
                     // --------------------------------------------
                     // Process: CPU time (in millis)
@@ -808,8 +824,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
                                         var fsp_charts = _view.make("p", {},
                                             "<div style='overflow: auto;'>" +
                                                 "<svg width='100%' height='160'>" +
-                                                    "<svg id='svg_fsChart_cnt_"+keys[i]+"' clip_id='clip_fsChart_cnt_"+keys[i]+"' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                                                    "<svg id='svg_fsChart_size_"+keys[i]+"' clip_id='clip_fsChart_size_"+keys[i]+"' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                                                    "<svg id='svg_fsChart_cnt_"+keys[i]+"' clip_id='clip_fsChart_cnt_"+keys[i]+"' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                                                    "<svg id='svg_fsChart_size_"+keys[i]+"' clip_id='clip_fsChart_size_"+keys[i]+"' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                                                 "</svg>" +
                                                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + fsInfo_cnt + "</div>" +
                                                 "<div width='46.5%' style='margin-left: 54%;'>" + fsInfo_size + "</div>" +
@@ -940,8 +956,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var desp3 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_channels' clip_id='clip_channels' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_transport_txrx' clip_id='clip_transport_txrx' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_channels' clip_id='clip_channels' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_transport_txrx' clip_id='clip_transport_txrx' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>"+channels+"</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>"+transportRxTx+"</div>" +
@@ -992,8 +1008,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var jvmpCharts1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_jvmHeapMem' clip_id='clip_jvmHeapMem' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_jvmNonHeapMem' clip_id='clip_jvmNonHeapMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_jvmHeapMem' clip_id='clip_jvmHeapMem' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_jvmNonHeapMem' clip_id='clip_jvmNonHeapMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + jvmHeapMem + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + jvmNonHeapMem + "</div>" +
@@ -1006,8 +1022,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var jvmpCharts2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_jvmThreads' clip_id='clip_jvmThreads' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_jvmGC' clip_id='clip_jvmGC' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_jvmThreads' clip_id='clip_jvmThreads' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_jvmGC' clip_id='clip_jvmGC' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + jvmThreads + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + jvmGC + "</div>" +
@@ -1040,8 +1056,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var tppCharts1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_threadpoolSearch' clip_id='clip_threadpoolSearch' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_threadpoolIndex' clip_id='clip_threadpoolIndex' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_threadpoolSearch' clip_id='clip_threadpoolSearch' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_threadpoolIndex' clip_id='clip_threadpoolIndex' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + tpSearch + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + tpIndex + "</div>" +
@@ -1054,8 +1070,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var tppCharts2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_threadpoolBulk' clip_id='clip_threadpoolBulk' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_threadpoolRefresh' clip_id='clip_threadpoolRefresh' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_threadpoolBulk' clip_id='clip_threadpoolBulk' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_threadpoolRefresh' clip_id='clip_threadpoolRefresh' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + tpBulk + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + tpRefresh + "</div>" +
@@ -1105,8 +1121,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var osCharts1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_osCpu' clip_id='clip_osCpu' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_osMem' clip_id='clip_osMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_osCpu' clip_id='clip_osCpu' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_osMem' clip_id='clip_osMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + osCpu + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + osMem + "</div>" +
@@ -1119,8 +1135,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var osCharts2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_osSwap' clip_id='clip_osSwap' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_osLoadAvg' clip_id='clip_osLoadAvg' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_osSwap' clip_id='clip_osSwap' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_osLoadAvg' clip_id='clip_osLoadAvg' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + osSwap + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + osLoad + "</div>" +
@@ -1153,8 +1169,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var processCharts1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_fileDescriptors' clip_id='clip_fileDescriptors' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_processMem' clip_id='clip_processMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_fileDescriptors' clip_id='clip_fileDescriptors' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_processMem' clip_id='clip_processMem' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + fileDescriptors + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + processMem + "</div>" +
@@ -1170,8 +1186,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var processCharts2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_processCPU_time' clip_id='clip_processCPU_time' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_processCPU_pct' clip_id='clip_processCPU_pct' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_processCPU_time' clip_id='clip_processCPU_time' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_processCPU_pct' clip_id='clip_processCPU_pct' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + processCPU_time + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + processCPU_pct + "</div>" +
@@ -1223,8 +1239,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var indicesCharts1p1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_indicesSearchReqs' clip_id='clip_indicesSearchReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_indicesSearchTime' clip_id='clip_indicesSearchTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_indicesSearchReqs' clip_id='clip_indicesSearchReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_indicesSearchTime' clip_id='clip_indicesSearchTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + indicesSearchReqs + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + indicesSearchTime + "</div>" +
@@ -1237,8 +1253,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var indicesCharts1p2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_indicesGetReqs' clip_id='clip_indicesGetReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_indicesGetTime' clip_id='clip_indicesGetTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_indicesGetReqs' clip_id='clip_indicesGetReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_indicesGetTime' clip_id='clip_indicesGetTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + indicesGetReqs + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + indicesGetTime + "</div>" +
@@ -1261,8 +1277,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var indicesCharts2p1 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_indicesCacheSize' clip_id='clip_indicesCacheSize' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_indicesCacheEvictions' clip_id='clip_indicesCacheEvictions' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_indicesCacheSize' clip_id='clip_indicesCacheSize' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_indicesCacheEvictions' clip_id='clip_indicesCacheEvictions' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + indicesCacheSize + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + indicesCacheEvictions + "</div>" +
@@ -1275,8 +1291,8 @@ var SelectedClusterNodeView = Backbone.View.extend({
         var indicesCharts2p2 = this.make("p", {},
             "<div style='overflow: auto;'>" +
                 "<svg width='100%' height='160'>" +
-                    "<svg id='svg_indicesIndexingReqs' clip_id='clip_indicesIndexingReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
-                    "<svg id='svg_indicesIndexingTime' clip_id='clip_indicesIndexingTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 250 160'/>" +
+                    "<svg id='svg_indicesIndexingReqs' clip_id='clip_indicesIndexingReqs' width='46.5%' height='100%' x='0' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
+                    "<svg id='svg_indicesIndexingTime' clip_id='clip_indicesIndexingTime' width='46.5%' height='100%' x='54%' y='0' preserveAspectRatio='xMinYMid' viewBox='0 0 270 160'/>" +
                 "</svg>" +
                 "<div width='46.5%' style='margin-left: 0%; float: left;'>" + indicesIndexingReqs + "</div>" +
                 "<div width='46.5%' style='margin-left: 54%;'>" + indicesIndexingTime + "</div>" +

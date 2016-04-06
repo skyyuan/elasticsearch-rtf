@@ -1,5 +1,5 @@
 /*   
-   Copyright 2011-2012 Lukas Vlcek
+   Copyright 2011-2014 Lukas Vlcek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ var ClusterHealthView = Backbone.View.extend({
             $(this.el).html(
                 "Cluster: " + health.get("cluster_name") +
                 "<br>Number of nodes: " + health.get("number_of_nodes") +
-                "<br>Status: <span style='background-color: "+health.get("status")+"'>" + health.get("status") +"</span>");
+                "<br>Status: <span class='clusterStatus " + health.get("status") + "'>" + health.get("status") +"</span>");
         }
         return this;
     },

@@ -6,3 +6,7 @@ cd /usr/share/elasticsearch
 ./bin/plugin install polyfractal/elasticsearch-inquisitor
 ./bin/plugin -install lukas-vlcek/bigdesk/2.5.0
 ./bin/plugin install org.carrot2/elasticsearch-carrot2/1.9.1
+cd ./plugins
+wget https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/elasticsearch-analysis-pinyin.tar.gz
+tar xzf elasticsearch-analysis-pinyin.tar.gz
+rm -f elasticsearch-analysis-pinyin.tar.gz

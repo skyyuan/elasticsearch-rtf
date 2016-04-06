@@ -17,9 +17,8 @@ rpm -iUvh https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-
 
 ### 安装插件
 
-1. 执行脚本：`./ins_plugins.sh`
-
-2. 单独安装pinyin插件。
+执行脚本：
+```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/ins_plugins.sh)"```
 
 ### 各插件配置
 

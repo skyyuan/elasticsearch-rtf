@@ -20,13 +20,6 @@ sudo systemctl enable elasticsearch.service
 sudo systemctl start elasticsearch.service
 ```
 
-### 配置es文件权限
-
-并且在`/data`目录下，创建es的工作目录。
-
-执行脚本：
-```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/configes.sh)"```
-
 ### 各项文件路径：
 * systemd service: `/usr/lib/systemd/system/elasticsearch.service`
 * config file: `/etc/elasticsearch/elasticsearch.yml`
@@ -35,6 +28,8 @@ sudo systemctl start elasticsearch.service
 
 #### 配置好的文件
 
+参考`config/elasticsearch.yml`
+
 ## 安装配置插件
 
 ### 安装插件
@@ -42,11 +37,18 @@ sudo systemctl start elasticsearch.service
 执行脚本：
 ```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/ins_plugins.sh)"```
 
+### 配置es文件权限
+
+并且在`/data`目录下，创建es的工作目录。
+
+执行脚本：
+```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/configes.sh)"```
+
 ### 各插件配置
 
 #### 配置大杂烩
 
-包括pinyin分词、ansj分词、默认分词的配置
+包括pinyin分词、ansj分词、默认分词、ik分词的配置
 
 ```
 index:
@@ -73,6 +75,9 @@ index:
         type: nGram
         min_gram: 1
         max_gram: 3
+      comma_sep:
+        type: pattern
+        pattern: '[,，]'
     filter:
       ngram_min_3:
         max_gram: 10
@@ -97,6 +102,14 @@ index:
       pinyin_first_letter:
         type: pinyin
         first_letter: only
+      nGram_2_to_20:
+        type: edgeNGram
+        min_gram: 2
+        max_gram: 20
+      prefix_pinyin:
+        type: pinyin
+        first_letter: only
+        padding_char: ''
     analyzer:
       lowercase_keyword:
         type: custom
@@ -194,9 +207,58 @@ index:
         type: custom
         tokenizer: path_hierarchy
       index_ansj:
-          type: ansj_index
+        type: ansj_index
       query_ansj:
-          type: ansj_query
+        type: ansj_query
+      ik:
+        alias: [ik_analyzer]
+        type: org.elasticsearch.index.analysis.IkAnalyzerProvider
+      ik_max_word:
+        type: ik
+        use_smart: false
+      ik_smart:
+        type: ik
+        use_smart: true
+      full_pinyin:
+        type: custom
+        tokenizer: ik
+        filter:
+          - pinyin
+          - lowercase
+          - trim
+          - unique
+      prefix_pinyin:
+        type: custom
+        tokenizer: ik
+        filter:
+          - prefix_pinyin
+          - lowercase
+          - trim
+          - unique
+      full_pinyin_ngram:
+        type: custom
+        tokenizer: ik
+        filter:
+          - pinyin
+          - lowercase
+          - nGram_2_to_20
+          - trim
+          - unique
+      prefix_pinyin_ngram:
+        type: custom
+        tokenizer: ik
+        filter:
+          - prefix_pinyin
+          - lowercase
+          - nGram_2_to_20
+          - trim
+          - unique
+      comma_sep:
+        type: custom
+        tokenizer: comma_sep
+        filter:
+          - lowercase
+          - trim
 
 index.analysis.analyzer.default.type: ansj_index
 ```

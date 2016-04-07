@@ -10,3 +10,10 @@ cd ./plugins
 wget https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/elasticsearch-analysis-pinyin.tar.gz
 tar xzf elasticsearch-analysis-pinyin.tar.gz
 rm -f elasticsearch-analysis-pinyin.tar.gz
+wget https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/elasticsearch-analysis-ik-1.4.1.zip
+unzip elasticsearch-analysis-ik-1.4.1.zip -d elasticsearch-analysis-ik
+rm -f elasticsearch-analysis-ik-1.4.1.zip
+cd ../config
+wget https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/ik-cfg.tar.gz
+tar xzf ik-cfg.tar.gz
+rm -f ik-cfg.tar.gz

@@ -7,11 +7,33 @@
 rpm -iUvh https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.5.noarch.rpm
 ```
 
+> NOT starting on installation, please execute the following statements to configure elasticsearch service to start automatically using systemd
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable elasticsearch.service
+```
+
+> You can start elasticsearch service by executing
+
+```
+sudo systemctl start elasticsearch.service
+```
+
+### 配置es文件权限
+
+并且在`/data`目录下，创建es的工作目录。
+
+执行脚本：
+```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/configes.sh)"```
+
 ### 各项文件路径：
 * systemd service: `/usr/lib/systemd/system/elasticsearch.service`
 * config file: `/etc/elasticsearch/elasticsearch.yml`
 * home: `/usr/share/elasticsearch`
 * environment file: `/etc/sysconfig/elasticsearch`
+
+#### 配置好的文件
 
 ## 安装配置插件
 

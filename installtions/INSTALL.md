@@ -44,6 +44,12 @@ sudo systemctl start elasticsearch.service
 执行脚本：
 ```bash -i -c "$(curl -s https://raw.githubusercontent.com/LYY/elasticsearch-rtf/master/installtions/configes.sh)"```
 
+统一权限，`/etc/elasticsearch` 目录下，统一为root权限。
+
+#### 修改配置文件
+
+｀/etc/sysconfig/elasticsearch｀
+
 ### 各插件配置
 
 #### 配置大杂烩
